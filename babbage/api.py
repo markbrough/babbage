@@ -150,7 +150,8 @@ def aggregate(name):
                             cuts=request.args.get('cut'),
                             order=request.args.get('order'),
                             page=request.args.get('page'),
-                            page_size=request.args.get('pagesize'))
+                            page_size=request.args.get('pagesize'),
+                            simple='simple' in request.args)
     result['status'] = 'ok'
 
     if request.args.get('format', '').lower() == 'csv':

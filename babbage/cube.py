@@ -58,7 +58,8 @@ class Cube(object):
         return 'postgresql' == self.engine.dialect.name
 
     def aggregate(self, aggregates=None, drilldowns=None, cuts=None,
-                  order=None, page=None, page_size=None, page_max=None):
+                  order=None, page=None, page_size=None, page_max=None,
+                  simple=False):
         """Main aggregation function. This is used to compute a given set of
         aggregates, grouped by a given set of drilldown dimensions (i.e.
         dividers). The query can also be filtered and sorted. """
@@ -86,13 +87,16 @@ class Cube(object):
             q = self.restrict_joins(q, bindings)
             return q, bindings, attributes, aggregates, cuts
 
+
         # Count
-        count = count_results(self, prep(cuts,
+        if not simple:
+            count = count_results(self, prep(cuts,
                                          drilldowns=drilldowns,
                                          columns=[1])[0])
 
         # Summary
-        summary = first_result(self, prep(cuts,
+        if not simple:
+            summary = first_result(self, prep(cuts,
                                           aggregates=aggregates)[0].limit(1))
 
         # Results
@@ -105,9 +109,11 @@ class Cube(object):
         cells = list(generate_results(self, q))
 
         return {
-            'total_cell_count': count,
+            'total_cell_count': count if not simple else None,
             'cells': cells,
-            'summary': summary,
+            'summary': summary if not simple else {
+                'msg': 'No summary in simple return.'
+            },
             'cell': cuts,
             'aggregates': aggregates,
             'attributes': attributes,
