@@ -59,12 +59,13 @@ class Cube(object):
 
     def aggregate(self, aggregates=None, drilldowns=None, cuts=None,
                   order=None, page=None, page_size=None, page_max=None,
-                  simple=False):
+                  simple=False, rollup=None):
         """Main aggregation function. This is used to compute a given set of
         aggregates, grouped by a given set of drilldown dimensions (i.e.
         dividers). The query can also be filtered and sorted. """
 
-        def prep(cuts, drilldowns=False, aggregates=False, columns=None):
+        def prep(cuts, drilldowns=False, aggregates=False, columns=None,
+            rollup=None):
             q = select(columns)
             bindings = []
             cuts, q, bindings = Cuts(self).apply(q, bindings, cuts)
@@ -81,7 +82,8 @@ class Cube(object):
                 aggregates, q, bindings = Aggregates(self).apply(
                     q,
                     bindings,
-                    aggregates
+                    aggregates,
+                    rollup
                 )
 
             q = self.restrict_joins(q, bindings)
@@ -101,7 +103,8 @@ class Cube(object):
 
         # Results
         q, bindings, attributes, aggregates, cuts = \
-            prep(cuts, drilldowns=drilldowns, aggregates=aggregates)
+            prep(cuts, drilldowns=drilldowns, aggregates=aggregates,
+                rollup=rollup)
         page, q = Pagination(self).apply(q, page, page_size, page_max)
         ordering, q, bindings = Ordering(self).apply(q, bindings, order)
         q = self.restrict_joins(q, bindings)
