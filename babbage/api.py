@@ -158,7 +158,8 @@ def aggregate(name):
                             order=request.args.get('order'),
                             page=request.args.get('page'),
                             page_size=request.args.get('pagesize'),
-                            simple='simple' in request.args)
+                            simple='simple' in request.args,
+                            rollup=request.args.get('rollup'))
     result['status'] = 'ok'
 
     if request.args.get('format', '').lower() == 'csv':
