@@ -31,6 +31,8 @@ class Ordering(Parser):
             if distinct is not None and distinct != ref:
                 column = asc(ref) if direction == 'asc' else desc(ref)
             else:
+                #FIXME
+                if isinstance(column, list): column = column[0]
                 column = column.label(column.name)
                 column = column.asc() if direction == 'asc' else column.desc()
                 bindings.append(Binding(table, ref))
