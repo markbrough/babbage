@@ -1,4 +1,4 @@
-from sqlalchemy import func
+from sqlalchemy import func, case
 
 from babbage.model.concept import Concept
 
@@ -19,17 +19,31 @@ class Aggregate(Concept):
             return '%s.%s' % (self.measure.ref, self.function)
         return '_%s' % self.function
 
-    def bind(self, cube):
+    def bind(self, cube, rollup=None):
         """ When one column needs to match, use the key. """
         if self.measure:
             table, column = self.measure.bind(cube)
         else:
             table, column = cube.fact_table, cube.fact_pk
-        # apply the SQL aggregation function:
-        column = getattr(func, self.function)(column)
-        column = column.label(self.ref)
-        column.quote = True
-        return table, column
+
+        columns = []
+        if rollup is not None:
+            r_table, r_column, r_values = rollup
+            for r_value in r_values:
+                columns.append(func.sum(
+                  case(
+                    [
+                    (r_column.in_(r_value), column)
+                    ], else_ = 0
+                  )
+                ).label(f"{self.ref}_{'-'.join(r_value)}"))
+        else:
+            # apply the SQL aggregation function:
+            column = getattr(func, self.function)(column)
+            column = column.label(self.ref)
+            column.quote = True
+            columns.append(column)
+        return table, columns
 
     def __repr__(self):
         return "<Aggregate(%s)>" % self.ref
