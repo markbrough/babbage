@@ -152,12 +152,14 @@ def model(name):
 def aggregate(name):
     """ Perform an aggregation request. """
     cube = get_cube(name)
+    page_max = current_app.config.get('BABBAGE_PAGE_MAX', 10000)
     result = cube.aggregate(aggregates=request.args.get('aggregates'),
                             drilldowns=request.args.get('drilldown'),
                             cuts=request.args.get('cut'),
                             order=request.args.get('order'),
                             page=request.args.get('page'),
                             page_size=request.args.get('pagesize'),
+                            page_max=page_max,
                             simple='simple' in request.args,
                             rollup=request.args.get('rollup'))
     result['status'] = 'ok'
