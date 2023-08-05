@@ -5,7 +5,8 @@ Description of the cuts/drilldown/ordering query structure.
 all = cuts | drilldowns | fields | ordering | rollup;
 
 cuts = cut { '|' cut } ;
-cut = ref ':' value ;
+cut = ref operator value ;
+operator = ?/:|~/? ;
 
 drilldowns = dimension { '|' dimension } ;
 dimension = ref ;
