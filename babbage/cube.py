@@ -1,4 +1,4 @@
-from sqlalchemy import MetaData
+from sqlalchemy import MetaData, inspect
 from sqlalchemy.schema import Table
 from sqlalchemy.sql.expression import select
 from six import string_types
@@ -32,7 +32,7 @@ class Cube(object):
         table = self._tables.get(name, None)
         if table is not None:
             return table
-        if not self.engine.has_table(name):
+        if not inspect(self.engine).has_table(name):
             raise BindingException('Table does not exist: %r' % name,
                                    table=name)
         table = Table(name, self.meta, autoload=True)
@@ -66,7 +66,7 @@ class Cube(object):
 
         def prep(cuts, drilldowns=False, aggregates=False, columns=None,
             rollup=None):
-            q = select(columns)
+            q = select(columns=columns)
             bindings = []
             cuts, q, bindings = Cuts(self).apply(q, bindings, cuts)
 
@@ -204,7 +204,7 @@ class Cube(object):
         performed. If more than one table are referenced, this ensures
         their returned rows are connected via the fact table.
         """
-        if len(q.froms) == 1:
+        if len(q.get_final_froms()) == 1:
             return q
         else:
             for binding in bindings:
