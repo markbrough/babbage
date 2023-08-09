@@ -31,7 +31,7 @@ jobs:
     # Change user name and password to meet your requirements
     - name: Create additional user
       run: |
-        sudo -u postgres psql --command="CREATE USER babbage" --command="\du"
+        sudo -u postgres psql --command="CREATE USER babbage PASSWORD 'foo'" --command="\du"
 
     # Change database name to meet your requirements
     - name: Create additional database
@@ -43,4 +43,4 @@ jobs:
     - name: Run tests
       run: pytest
       env:
-        BABBAGE_TEST_DB: postgresql://postgres@localhost:5432/postgres
+        BABBAGE_TEST_DB: postgresql://babbage:foo@localhost:5432/babbage
