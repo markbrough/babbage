@@ -19,7 +19,10 @@ setup(
         'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3.4',
         'Programming Language :: Python :: 3.5',
-        'Programming Language :: Python :: 3.6'
+        'Programming Language :: Python :: 3.6',
+        'Programming Language :: Python :: 3.7',
+        'Programming Language :: Python :: 3.8',
+        'Programming Language :: Python :: 3.9'
     ],
     keywords='sql sqlalchemy olap cubes analytics',
     author='Friedrich Lindenberg',
@@ -44,8 +47,7 @@ setup(
         'grako == 3.10.1'  # Versions > 3.10.1 break our tests
     ],
     tests_require=[
-        'pytest==7.4.0',
-        'pytest-flask==1.2.0'
+        'tox'
     ],
     test_suite='tests',
     entry_points={}
