@@ -30,13 +30,22 @@ class Aggregate(Concept):
         if rollup is not None:
             r_table, r_column, r_values = rollup
             for r_value in r_values:
-                columns.append(func.sum(
-                  case(
-                    [
-                    (r_column.in_(r_value), column)
-                    ], else_ = 0
-                  )
-                ).label(f"{self.ref}_{'-'.join(r_value)}"))
+                if self.function == 'count':
+                    columns.append(getattr(func, 'sum')(
+                      case(
+                        [
+                        (r_column.in_(r_value), 1)
+                        ], else_ = 0
+                      )
+                    ).label(f"{self.ref}_{'-'.join(r_value)}"))
+                else:
+                    columns.append(getattr(func, self.function)(
+                      case(
+                        [
+                        (r_column.in_(r_value), column)
+                        ], else_ = 0
+                      )
+                    ).label(f"{self.ref}_{'-'.join(r_value)}"))
         else:
             # apply the SQL aggregation function:
             column = getattr(func, self.function)(column)
