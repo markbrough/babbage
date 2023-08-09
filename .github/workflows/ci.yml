@@ -36,7 +36,7 @@ jobs:
     # Change database name to meet your requirements
     - name: Create additional database
       run: |
-        sudo -u postgres createdb --owner=joe babbage psql --username=babbage --host=localhost --list timetable
+        sudo -u postgres createdb --owner=babbage babbage psql --username=babbage --host=localhost --list timetable
 
     - name: Install test dependencies
       run: pip install pytest==7.4.0 pytest-flask==1.2.0
