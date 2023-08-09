@@ -93,7 +93,7 @@ def load_csv(sqla_engine, file_name, table_name=None):
     table_name = table_name or os.path.basename(file_name).split('.')[0]
     path = os.path.join(FIXTURE_PATH, file_name)
     table = None
-    with open(path, 'rb') as fh:
+    with open(path, 'r') as fh:
         for i, row in enumerate(unicodecsv.DictReader(fh)):
             if table is None:
                 table = _create_table(sqla_engine, table_name, row.keys())
