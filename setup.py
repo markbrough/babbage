@@ -44,6 +44,7 @@ setup(
         'jsonschema >= 2.5.1',
         'sqlalchemy == 1.*', # Higher versions break tests
         'psycopg2 >= 2.6',
+        'python-dateutil',
         'grako == 3.10.1'  # Versions > 3.10.1 break our tests
     ],
     tests_require=[
