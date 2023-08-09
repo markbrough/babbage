@@ -84,7 +84,7 @@ class Aggregates(Parser):
             # If no aggregates are specified, aggregate on all.
             for aggregate in self.cube.model.aggregates:
                 info.append(aggregate.ref)
-                table, column = aggregate.bind(self.cube)
+                table, columns = aggregate.bind(self.cube, self.rollups)
                 bindings.append(Binding(table, aggregate.ref))
                 q = q.add_columns(*columns)
         return info, q, bindings
