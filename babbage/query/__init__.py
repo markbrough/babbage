@@ -25,7 +25,7 @@ def generate_results(cube, q):
         row = rp.fetchone()
         if row is None:
             return
-        yield dict(row.items())
+        yield dict(row._mapping.items())
 
 
 def first_result(cube, q):
