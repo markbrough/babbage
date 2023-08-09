@@ -28,6 +28,6 @@ jobs:
         postgresql db: 'postgres'
         postgresql user: 'postgres'
     - name: Run tests
-      run: pytest
+      run: tox
       env:
         BABBAGE_TEST_DB: postgresql://postgres@localhost:5432/postgres
