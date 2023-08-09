@@ -37,7 +37,7 @@ class Fields(Parser):
                         min_column = func.max(column)
                         min_column = min_column.label(column.name)
                         column = min_column
-                q = q.column(column)
+                q = q.add_columns(*[column])
 
         if not len(self.results):
             # If no fields are requested, return all available fields.
@@ -46,6 +46,6 @@ class Fields(Parser):
                 info.append(concept.ref)
                 table, column = concept.bind(self.cube)
                 bindings.append(Binding(table, concept.ref))
-                q = q.column(column)
+                q = q.add_columns(*[column])
 
         return info, q, bindings
