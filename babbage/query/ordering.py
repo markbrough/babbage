@@ -41,7 +41,7 @@ class Ordering(Parser):
             q = q.order_by(column)
 
         if not len(self.results):
-            for column in q.columns:
+            for column in q.selected_columns:
                 column = column.asc()
                 if self.cube.is_postgresql:
                     column = column.nullslast()
