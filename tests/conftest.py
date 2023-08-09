@@ -20,7 +20,8 @@ def app():
     app.config['DEBUG'] = True
     app.config['TESTING'] = True
     app.config['PRESERVE_CONTEXT_ON_EXCEPTION'] = True
-    return app
+    with app.app_context() as client:
+        return app
 
 
 @pytest.fixture
