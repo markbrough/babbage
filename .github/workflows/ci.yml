@@ -1,0 +1,33 @@
+name: CI
+on: [push, pull_request]
+jobs:
+  test:
+    name: Run tests
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python 3.9
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.9
+    - uses: actions/cache@v2
+      name: Cache dependencies
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements_dev.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip wheel
+        pip install -e .
+    - uses: Harmon758/postgresql-action@v1.0.0
+      name: Set up postgres
+      with:
+        postgresql version: '12'
+        postgresql db: 'postgres'
+        postgresql user: 'postgres'
+    - name: Run tests
+      run: pytest
+      env:
+        BABBAGE_TEST_DB: postgresql://postgres@localhost:5432/postgres
