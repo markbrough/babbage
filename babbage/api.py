@@ -4,9 +4,10 @@ from datetime import date
 from decimal import Decimal
 import csv
 import io
+import json
 
 from werkzeug.exceptions import NotFound
-from flask import Blueprint, Response, request, current_app, json, url_for
+from flask import Blueprint, Response, request, current_app, url_for
 
 from babbage.exc import BabbageException
 
