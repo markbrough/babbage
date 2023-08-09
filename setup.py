@@ -37,14 +37,15 @@ setup(
         'normality >= 0.2.2',
         'PyYAML >= 3.10',
         'six >= 1.7.3',
-        'flask >= 0.10.1',
+        'flask == 2.2.2', # Higher versions break tests
         'jsonschema >= 2.5.1',
-        'sqlalchemy >= 1.0',
+        'sqlalchemy == 1.4.44', # Higher versions break tests
         'psycopg2 >= 2.6',
         'grako == 3.10.1'  # Versions > 3.10.1 break our tests
     ],
     tests_require=[
-        'tox'
+        'pytest==7.4.0',
+        'pytest-flask==1.2.0'
     ],
     test_suite='tests',
     entry_points={}
