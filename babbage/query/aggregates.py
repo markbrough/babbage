@@ -61,8 +61,8 @@ class Aggregates(Parser):
 
     def apply(self, q, bindings, aggregates, rollup=None):
         info = []
-        self.start = "rollup"
 
+        self.start = "rollup"
         if rollup is not None:
             for (ref, operator, value) in self.parse(rollup):
                 if map_is_class and isinstance(value, map):
