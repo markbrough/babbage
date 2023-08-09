@@ -28,19 +28,9 @@ jobs:
         sudo systemctl start postgresql.service
         pg_isready
 
-    # Change user name and password to meet your requirements
-    - name: Create additional user
-      run: |
-        sudo -u postgres psql --command="CREATE USER babbage" --command="\du"
-
-    # Change database name to meet your requirements
-    - name: Create additional database
-      run: |
-        sudo -u postgres createdb --owner=babbage babbage psql --username=babbage --host=localhost --list timetable
-
     - name: Install test dependencies
       run: pip install pytest==7.4.0 pytest-flask==1.2.0
     - name: Run tests
       run: pytest
       env:
-        BABBAGE_TEST_DB: postgresql://babbage@localhost:5432/babbage
+        BABBAGE_TEST_DB: postgresql://postgres@localhost:5432/postgres
