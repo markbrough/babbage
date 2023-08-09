@@ -78,7 +78,8 @@ def sqla_engine():
     try:
         yield engine
     finally:
-        meta = sqlalchemy.MetaData(bind=engine, reflect=True)
+        meta = sqlalchemy.MetaData(bind=engine)
+        meta.reflect()
         meta.drop_all()
 
 
@@ -106,7 +107,7 @@ def _create_table(engine, table_name, columns):
     meta = sqlalchemy.MetaData()
     meta.bind = engine
 
-    if engine.has_table(table_name):
+    if sqlalchemy.inspect(engine).has_table(table_name):
         table = sqlalchemy.schema.Table(table_name, meta, autoload=True)
         table.drop()
 
