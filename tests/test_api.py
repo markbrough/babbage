@@ -120,6 +120,13 @@ class TestCubeManager(object):
         assert res.status_code == 200, (res, res.get_data())
         assert 11 == len(res.json['data']), len(res.json['data'])
 
+    @pytest.mark.usefixtures('load_fixtures')
+    def test_facts_cut_like(self, client):
+        res = client.get(url_for('babbage_api.facts', name='cra',
+                                      cut='region~"SCOT"'))
+        assert res.status_code == 200, (res, res.get_data())
+        assert 3 == len(res.json['data']), len(res.json['data'])
+
     def test_members_missing(self, client):
         res = client.get(url_for('babbage_api.members', name='cra',
                                       ref='codfss'))
@@ -132,6 +139,15 @@ class TestCubeManager(object):
         assert res.status_code == 200, res
         assert 'total_member_count' in res.json, res.json
         assert 4 == len(res.json['data']), res.json
+
+    @pytest.mark.usefixtures('load_fixtures')
+    def test_members_like(self, client):
+        res = client.get(url_for('babbage_api.members', name='cra',
+                                ref='region', cut='region~"SCOT"'))
+        assert res.status_code == 200, res
+        assert 'total_member_count' in res.json, res.json
+        assert 1 == len(res.json['data']), res.json
+        assert res.json['data'][0]['region.region'] == 'SCOTLAND', res.json
 
     @pytest.mark.usefixtures('load_fixtures')
     def test_rollups(self, client):
