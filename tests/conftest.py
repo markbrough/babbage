@@ -3,7 +3,7 @@ import json
 import dateutil.parser
 import pytest
 import flask
-import unicodecsv
+import csv as unicodecsv
 import sqlalchemy
 
 import babbage.api
