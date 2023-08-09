@@ -27,7 +27,9 @@ jobs:
         postgresql version: '12'
         postgresql db: 'postgres'
         postgresql user: 'postgres'
+    - name: Install test dependencies
+      run: pip install pytest==7.4.0 pytest-flask==1.2.0
     - name: Run tests
-      run: tox
+      run: pytest
       env:
         BABBAGE_TEST_DB: postgresql://postgres@localhost:5432/postgres
