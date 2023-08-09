@@ -70,6 +70,7 @@ class Aggregates(Parser):
                 self._check_type(ref, value)
                 table, column = self.cube.model[ref].bind(self.cube)
                 self.rollups = (table, column, value[0])
+                bindings.append(Binding(table, ref))
             self.results = []
 
         self.start = "aggregates"
