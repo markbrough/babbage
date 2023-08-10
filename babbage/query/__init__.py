@@ -11,8 +11,10 @@ from babbage.query.pagination import Pagination  # noqa
 
 def count_results(cube, q):
     """ Get the count of records matching the query. """
-    q = select(columns=[func.count(True)], from_obj=q.alias())
-    return cube.engine.execute(q).scalar()
+    with cube.engine.connect() as connection:
+        q = select(*[func.count(True)]).select_from(q.alias())
+        results = connection.execute(q).scalar()
+    return results
 
 
 def generate_results(cube, q):
@@ -20,7 +22,8 @@ def generate_results(cube, q):
     Values will be returned by their reference. """
     if q._limit is not None and q._limit < 1:
         return
-    rp = cube.engine.execute(q)
+    with cube.engine.connect() as connection:
+        rp = connection.execute(q)
     while True:
         row = rp.fetchone()
         if row is None:
