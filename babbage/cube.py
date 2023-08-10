@@ -25,7 +25,8 @@ class Cube(object):
             self._tables[model.fact_table_name] = fact_table
         self.model = model
         self.engine = engine
-        self.meta = MetaData(bind=engine)
+        self.meta = MetaData()
+        self.meta.reflect(engine)
 
     def _load_table(self, name):
         """ Reflect a given table from the database. """
@@ -35,7 +36,7 @@ class Cube(object):
         if not inspect(self.engine).has_table(name):
             raise BindingException('Table does not exist: %r' % name,
                                    table=name)
-        table = Table(name, self.meta, autoload=True)
+        table = Table(name, self.meta, autoload_with=self.engine)
         self._tables[name] = table
         return table
 
@@ -66,7 +67,10 @@ class Cube(object):
 
         def prep(cuts, drilldowns=False, aggregates=False, columns=None,
             rollup=None):
-            q = select(columns=columns)
+            if columns is not None:
+                q = select(*columns)
+            else:
+                q = select()
             bindings = []
             cuts, q, bindings = Cuts(self).apply(q, bindings, cuts)
 
@@ -130,7 +134,10 @@ class Cube(object):
         paginated. If the reference describes a dimension, all attributes are
         returned. """
         def prep(cuts, ref, order, columns=None):
-            q = select(columns=columns)
+            if columns is not None:
+                q = select(*columns)
+            else:
+                q = select()
             bindings = []
             cuts, q, bindings = Cuts(self).apply(q, bindings, cuts)
             fields, q, bindings = \
@@ -163,7 +170,10 @@ class Cube(object):
         if these are specified. """
 
         def prep(cuts, columns=None):
-            q = select(columns=columns).select_from(self.fact_table)
+            if columns is not None:
+                q = select(*columns).select_from(self.fact_table)
+            else:
+                q = select().select_from(self.fact_table)
             bindings = []
             _, q, bindings = Cuts(self).apply(q, bindings, cuts)
             q = self.restrict_joins(q, bindings)
