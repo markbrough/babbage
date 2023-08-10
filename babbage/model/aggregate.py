@@ -33,17 +33,13 @@ class Aggregate(Concept):
                 if self.function == 'count':
                     columns.append(getattr(func, 'sum')(
                       case(
-                        [
-                        (r_column.in_(r_value), 1)
-                        ], else_ = 0
+                        (r_column.in_(r_value), 1), else_ = 0
                       )
                     ).label(f"{self.ref}_{'-'.join(r_value)}"))
                 else:
                     columns.append(getattr(func, self.function)(
                       case(
-                        [
-                        (r_column.in_(r_value), column)
-                        ], else_ = 0
+                        (r_column.in_(r_value), column), else_ = 0
                       )
                     ).label(f"{self.ref}_{'-'.join(r_value)}"))
         else:
