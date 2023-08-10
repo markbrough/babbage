@@ -40,9 +40,9 @@ setup(
         'normality >= 0.2.2',
         'PyYAML >= 3.10',
         'six >= 1.7.3',
-        'flask == 2.*', # Higher versions break tests
+        'flask == 2.*',
         'jsonschema >= 2.5.1',
-        'sqlalchemy == 1.*', # Higher versions break tests
+        'sqlalchemy >= 1',
         'psycopg2 >= 2.6',
         'python-dateutil',
         'grako == 3.10.1'  # Versions > 3.10.1 break our tests
