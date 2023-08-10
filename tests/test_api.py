@@ -158,3 +158,5 @@ class TestCubeManager(object):
         assert 1 == len(res.json['cells']), res.json
         assert res.json['cells'][0]['amount.sum_CAP'] == -608400000
         assert res.json['cells'][0]['amount.sum_CUR'] == 236900000
+        assert res.json['cells'][0]['_count_CAP'] == 15
+        assert res.json['cells'][0]['_count_CUR'] == 21
