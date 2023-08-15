@@ -23,6 +23,6 @@ class Drilldowns(Parser):
                 info.append(attribute.ref)
                 table, column = attribute.bind(self.cube)
                 bindings.append(Binding(table, attribute.ref))
-                q = q.column(column)
+                q = q.add_columns(*[column])
                 q = q.group_by(column)
         return info, q, bindings

@@ -6,6 +6,7 @@ from babbage.api import map_is_class
 from babbage.query.parser import Parser
 from babbage.model.binding import Binding
 from babbage.exc import QueryException
+import sqlalchemy as sa
 
 
 class Cuts(Parser):
@@ -64,5 +65,8 @@ class Cuts(Parser):
             info.append({'ref': ref, 'operator': operator, 'value': value})
             table, column = self.cube.model[ref].bind(self.cube)
             bindings.append(Binding(table, ref))
-            q = q.where(column.in_(value))
+            if operator == '~':
+                q = q.where(sa.or_(*[column.ilike(f'%{val}%') for val in value]))
+            else:
+                q = q.where(column.in_(value))
         return info, q, bindings

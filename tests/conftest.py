@@ -3,8 +3,11 @@ import json
 import dateutil.parser
 import pytest
 import flask
-import unicodecsv
+import csv as unicodecsv
 import sqlalchemy
+from sqlalchemy import MetaData
+from sqlalchemy.sql.expression import insert
+from sqlalchemy.orm import sessionmaker
 
 import babbage.api
 import babbage.model
@@ -20,7 +23,8 @@ def app():
     app.config['DEBUG'] = True
     app.config['TESTING'] = True
     app.config['PRESERVE_CONTEXT_ON_EXCEPTION'] = True
-    return app
+    with app.app_context() as client:
+        return app
 
 
 @pytest.fixture
@@ -73,12 +77,12 @@ def sqla_engine():
     DATABASE_URI = os.environ.get('BABBAGE_TEST_DB')
     assert DATABASE_URI, 'Set the envvar BABBAGE_TEST_DB to a PostgreSQL URI'
     engine = sqlalchemy.create_engine(DATABASE_URI)
-
+    metadata_obj = MetaData()
     try:
         yield engine
     finally:
-        meta = sqlalchemy.MetaData(bind=engine, reflect=True)
-        meta.drop_all()
+        metadata_obj.reflect(engine)
+        metadata_obj.drop_all(engine)
 
 
 def load_json_fixture(name):
@@ -91,13 +95,16 @@ def load_csv(sqla_engine, file_name, table_name=None):
     table_name = table_name or os.path.basename(file_name).split('.')[0]
     path = os.path.join(FIXTURE_PATH, file_name)
     table = None
-    with open(path, 'rb') as fh:
-        for i, row in enumerate(unicodecsv.DictReader(fh)):
-            if table is None:
-                table = _create_table(sqla_engine, table_name, row.keys())
-            row['_id'] = str(i)
-            stmt = table.insert(_convert_row(row))
-            sqla_engine.execute(stmt)
+    Session = sessionmaker(sqla_engine)
+    with Session() as session:
+        with open(path, 'r') as fh:
+            for i, row in enumerate(unicodecsv.DictReader(fh)):
+                if table is None:
+                    table = _create_table(sqla_engine, table_name, row.keys())
+                row['_id'] = str(i)
+                stmt = insert(table).values(_convert_row(row))
+                session.execute(stmt)
+                session.commit()
     return table
 
 
@@ -105,7 +112,7 @@ def _create_table(engine, table_name, columns):
     meta = sqlalchemy.MetaData()
     meta.bind = engine
 
-    if engine.has_table(table_name):
+    if sqlalchemy.inspect(engine).has_table(table_name):
         table = sqlalchemy.schema.Table(table_name, meta, autoload=True)
         table.drop()
 

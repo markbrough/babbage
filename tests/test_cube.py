@@ -1,4 +1,5 @@
 import pytest
+import sqlalchemy
 
 from babbage.cube import Cube
 from babbage.exc import BindingException, QueryException
@@ -6,7 +7,7 @@ from babbage.exc import BindingException, QueryException
 
 class TestCube(object):
     def test_table_exists(self, sqla_engine, cra_table):
-        assert sqla_engine.has_table(cra_table.name)
+        assert sqlalchemy.inspect(sqla_engine).has_table(cra_table.name)
 
     def test_table_load(self, cube, cra_table):
         table = cube._load_table(cra_table.name)

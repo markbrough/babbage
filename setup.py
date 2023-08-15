@@ -19,7 +19,10 @@ setup(
         'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3.4',
         'Programming Language :: Python :: 3.5',
-        'Programming Language :: Python :: 3.6'
+        'Programming Language :: Python :: 3.6',
+        'Programming Language :: Python :: 3.7',
+        'Programming Language :: Python :: 3.8',
+        'Programming Language :: Python :: 3.9'
     ],
     keywords='sql sqlalchemy olap cubes analytics',
     author='Friedrich Lindenberg',
@@ -37,10 +40,11 @@ setup(
         'normality >= 0.2.2',
         'PyYAML >= 3.10',
         'six >= 1.7.3',
-        'flask >= 0.10.1',
+        'flask == 2.*',
         'jsonschema >= 2.5.1',
-        'sqlalchemy >= 1.0',
+        'sqlalchemy >= 1',
         'psycopg2 >= 2.6',
+        'python-dateutil',
         'grako == 3.10.1'  # Versions > 3.10.1 break our tests
     ],
     tests_require=[

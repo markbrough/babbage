@@ -28,6 +28,8 @@ class Parser(object):
         text = ast[0]
         if text.startswith('"') and text.endswith('"'):
             return json.loads(text)
+        elif text.startswith('[') and text.endswith(']'):
+            return json.loads(text)
         return text
 
     def string_set(self, ast):

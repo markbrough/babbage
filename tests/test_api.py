@@ -8,6 +8,7 @@ from babbage.manager import JSONCubeManager
 from babbage.api import configure_api
 
 
+@pytest.mark.usefixtures('client_class')
 @pytest.mark.usefixtures('load_api_fixtures')
 class TestCubeManager(object):
     def test_index(self, client):
@@ -119,6 +120,13 @@ class TestCubeManager(object):
         assert res.status_code == 200, (res, res.get_data())
         assert 11 == len(res.json['data']), len(res.json['data'])
 
+    @pytest.mark.usefixtures('load_fixtures')
+    def test_facts_cut_like(self, client):
+        res = client.get(url_for('babbage_api.facts', name='cra',
+                                      cut='region~"SCOT"'))
+        assert res.status_code == 200, (res, res.get_data())
+        assert 3 == len(res.json['data']), len(res.json['data'])
+
     def test_members_missing(self, client):
         res = client.get(url_for('babbage_api.members', name='cra',
                                       ref='codfss'))
@@ -131,3 +139,24 @@ class TestCubeManager(object):
         assert res.status_code == 200, res
         assert 'total_member_count' in res.json, res.json
         assert 4 == len(res.json['data']), res.json
+
+    @pytest.mark.usefixtures('load_fixtures')
+    def test_members_like(self, client):
+        res = client.get(url_for('babbage_api.members', name='cra',
+                                ref='region', cut='region~"SCOT"'))
+        assert res.status_code == 200, res
+        assert 'total_member_count' in res.json, res.json
+        assert 1 == len(res.json['data']), res.json
+        assert res.json['data'][0]['region.region'] == 'SCOTLAND', res.json
+
+    @pytest.mark.usefixtures('load_fixtures')
+    def test_rollups(self, client):
+        res = client.get(url_for('babbage_api.aggregate', name='cra',
+            rollup='cap_or_cur:[["CUR"],["CAP"]]'))
+        assert res.status_code == 200, res
+        assert 'summary' in res.json, res.json
+        assert 1 == len(res.json['cells']), res.json
+        assert res.json['cells'][0]['amount.sum_CAP'] == -608400000
+        assert res.json['cells'][0]['amount.sum_CUR'] == 236900000
+        assert res.json['cells'][0]['_count_CAP'] == 15
+        assert res.json['cells'][0]['_count_CUR'] == 21

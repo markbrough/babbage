@@ -1,4 +1,4 @@
-from sqlalchemy import MetaData
+from sqlalchemy import MetaData, inspect
 from sqlalchemy.schema import Table
 from sqlalchemy.sql.expression import select
 from six import string_types
@@ -25,17 +25,18 @@ class Cube(object):
             self._tables[model.fact_table_name] = fact_table
         self.model = model
         self.engine = engine
-        self.meta = MetaData(bind=engine)
+        self.meta = MetaData()
+        self.meta.reflect(engine)
 
     def _load_table(self, name):
         """ Reflect a given table from the database. """
         table = self._tables.get(name, None)
         if table is not None:
             return table
-        if not self.engine.has_table(name):
+        if not inspect(self.engine).has_table(name):
             raise BindingException('Table does not exist: %r' % name,
                                    table=name)
-        table = Table(name, self.meta, autoload=True)
+        table = Table(name, self.meta, autoload_with=self.engine)
         self._tables[name] = table
         return table
 
@@ -58,13 +59,18 @@ class Cube(object):
         return 'postgresql' == self.engine.dialect.name
 
     def aggregate(self, aggregates=None, drilldowns=None, cuts=None,
-                  order=None, page=None, page_size=None, page_max=None):
+                  order=None, page=None, page_size=None, page_max=None,
+                  simple=False, rollup=None):
         """Main aggregation function. This is used to compute a given set of
         aggregates, grouped by a given set of drilldown dimensions (i.e.
         dividers). The query can also be filtered and sorted. """
 
-        def prep(cuts, drilldowns=False, aggregates=False, columns=None):
-            q = select(columns)
+        def prep(cuts, drilldowns=False, aggregates=False, columns=None,
+            rollup=None):
+            if columns is not None:
+                q = select(*columns)
+            else:
+                q = select()
             bindings = []
             cuts, q, bindings = Cuts(self).apply(q, bindings, cuts)
 
@@ -80,24 +86,29 @@ class Cube(object):
                 aggregates, q, bindings = Aggregates(self).apply(
                     q,
                     bindings,
-                    aggregates
+                    aggregates,
+                    rollup
                 )
 
             q = self.restrict_joins(q, bindings)
             return q, bindings, attributes, aggregates, cuts
 
+
         # Count
-        count = count_results(self, prep(cuts,
+        if not simple:
+            count = count_results(self, prep(cuts,
                                          drilldowns=drilldowns,
                                          columns=[1])[0])
 
         # Summary
-        summary = first_result(self, prep(cuts,
+        if not simple:
+            summary = first_result(self, prep(cuts,
                                           aggregates=aggregates)[0].limit(1))
 
         # Results
         q, bindings, attributes, aggregates, cuts = \
-            prep(cuts, drilldowns=drilldowns, aggregates=aggregates)
+            prep(cuts, drilldowns=drilldowns, aggregates=aggregates,
+                rollup=rollup)
         page, q = Pagination(self).apply(q, page, page_size, page_max)
         ordering, q, bindings = Ordering(self).apply(q, bindings, order)
         q = self.restrict_joins(q, bindings)
@@ -105,9 +116,11 @@ class Cube(object):
         cells = list(generate_results(self, q))
 
         return {
-            'total_cell_count': count,
+            'total_cell_count': count if not simple else None,
             'cells': cells,
-            'summary': summary,
+            'summary': summary if not simple else {
+                'msg': 'No summary in simple return.'
+            },
             'cell': cuts,
             'aggregates': aggregates,
             'attributes': attributes,
@@ -121,7 +134,10 @@ class Cube(object):
         paginated. If the reference describes a dimension, all attributes are
         returned. """
         def prep(cuts, ref, order, columns=None):
-            q = select(columns=columns)
+            if columns is not None:
+                q = select(*columns)
+            else:
+                q = select()
             bindings = []
             cuts, q, bindings = Cuts(self).apply(q, bindings, cuts)
             fields, q, bindings = \
@@ -154,7 +170,10 @@ class Cube(object):
         if these are specified. """
 
         def prep(cuts, columns=None):
-            q = select(columns=columns).select_from(self.fact_table)
+            if columns is not None:
+                q = select(*columns).select_from(self.fact_table)
+            else:
+                q = select().select_from(self.fact_table)
             bindings = []
             _, q, bindings = Cuts(self).apply(q, bindings, cuts)
             q = self.restrict_joins(q, bindings)
@@ -195,7 +214,7 @@ class Cube(object):
         performed. If more than one table are referenced, this ensures
         their returned rows are connected via the fact table.
         """
-        if len(q.froms) == 1:
+        if len(q.get_final_froms()) == 1:
             return q
         else:
             for binding in bindings:
