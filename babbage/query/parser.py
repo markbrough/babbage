@@ -25,7 +25,7 @@ class Parser(object):
         self.bindings = []
 
     def string_value(self, ast):
-        text = ast[0]
+        text = ast[0] if len(ast)>0 else ""
         if text.startswith('"') and text.endswith('"'):
             return json.loads(text)
         elif text.startswith('[') and text.endswith(']'):
